@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TrueSender - Spam &amp; Phishing Email Detector</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>TrueSender</h1>
+        <p class="subtitle">Hybrid Spam &amp; Phishing Email Detector (Java + Python)</p>
+        <div th:if="${mlServiceOnline}" class="status status-online">● ML Service Online</div>
+        <div th:unless="${mlServiceOnline}" class="status status-offline">
+            ● ML Service Offline — start it with: <code>cd ml-service &amp;&amp; uvicorn main:app --port 8000</code>
+        </div>
+    </header>
+
+    <nav>
+        <a href="/">Scan Email</a>
+        <a href="/history">History</a>
+        <a href="/stats">Statistics</a>
+    </nav>
+
+    <div th:if="${error}" class="alert alert-error">
+        <strong>Error:</strong> <span th:text="${error}"></span>
+    </div>
+
+    <form method="post" action="/scan" class="scan-form">
+        <label for="emailText">Email content</label>
+        <textarea id="emailText" name="emailText" rows="8"
+                  placeholder="Paste the email body here (min 10 characters, max 5000)..." required></textarea>
+
+        <div class="form-row">
+            <div class="form-col">
+                <label for="senderDisplayName">Sender display name (optional)</label>
+                <input type="text" id="senderDisplayName" name="senderDisplayName" placeholder="e.g. PayPal Support">
+            </div>
+            <div class="form-col">
+                <label for="senderEmail">Sender email address (optional)</label>
+                <input type="text" id="senderEmail" name="senderEmail" placeholder="e.g. support@paypa1-secure.ru">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-scan">Scan Email</button>
+    </form>
+
+    <div th:if="${result}" class="result-card"
+         th:classappend="${result.finalVerdict == 'SAFE'} ? 'result-safe' :
+                          (${result.finalVerdict == 'HIGH RISK'} ? 'result-danger' : 'result-warning')">
+        <h2 th:text="${result.finalVerdict}"></h2>
+
+        <div class="result-grid">
+            <div class="result-section">
+                <h3>ML Classification</h3>
+                <p>Label: <strong th:text="${result.mlLabel}"></strong></p>
+                <p>Confidence band: <strong th:text="${result.confidenceBand}"></strong></p>
+                <p>Confidence: <span th:text="${#numbers.formatPercent(result.mlConfidence, 1, 0)}"></span></p>
+                <p>Spam probability: <span th:text="${#numbers.formatPercent(result.spamProbability, 1, 0)}"></span></p>
+                <p>Ham probability: <span th:text="${#numbers.formatPercent(result.hamProbability, 1, 0)}"></span></p>
+            </div>
+            <div class="result-section">
+                <h3>Phishing Heuristics</h3>
+                <p>Suspected: <strong th:text="${result.phishingSuspected ? 'YES' : 'NO'}"></strong></p>
+                <p>Risk score: <strong th:text="${#numbers.formatPercent(result.phishingRiskScore, 1, 0)}"></strong></p>
+                <p>Checks triggered: <span th:text="${result.phishingTriggeredChecks} + ' / ' + ${result.phishingTotalChecks}"></span></p>
+                <p><a th:href="@{'/scan/' + ${result.id}}">View full detail →</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>B.Tech Final Year Project — Hybrid Spam &amp; Phishing Detector</p>
+        <p class="tech-credits">Python (scikit-learn + FastAPI) for ML &middot; Java (Spring Boot) for backend &middot; Rule-based heuristics for phishing</p>
+    </footer>
+</div>
+</body>
+</html>

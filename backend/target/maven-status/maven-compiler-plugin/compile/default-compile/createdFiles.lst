@@ -1,0 +1,10 @@
+com\truesender\backend\BackendApplication.class
+com\truesender\backend\dto\AnalyzeResponseDto$MlResult.class
+com\truesender\backend\service\MlClientService$MlServiceUnavailableException.class
+com\truesender\backend\repository\EmailScanRepository.class
+com\truesender\backend\service\MlClientService.class
+com\truesender\backend\model\EmailScan.class
+com\truesender\backend\controller\EmailController.class
+com\truesender\backend\dto\AnalyzeRequestDto.class
+com\truesender\backend\service\EmailScanService.class
+com\truesender\backend\dto\AnalyzeResponseDto.class

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TrueSender - Scan Detail</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>TrueSender</h1>
+        <p class="subtitle">Scan Detail #<span th:text="${scan.id}"></span></p>
+    </header>
+
+    <nav>
+        <a href="/">Scan Email</a>
+        <a href="/history">History</a>
+        <a href="/stats">Statistics</a>
+    </nav>
+
+    <div class="result-card"
+         th:classappend="${scan.finalVerdict == 'SAFE'} ? 'result-safe' :
+                          (${scan.finalVerdict == 'HIGH RISK'} ? 'result-danger' : 'result-warning')">
+        <h2 th:text="${scan.finalVerdict}"></h2>
+        <p class="timestamp" th:text="'Scanned: ' + ${#temporals.format(scan.scannedAt, 'dd-MM-yyyy HH:mm:ss')}"></p>
+    </div>
+
+    <div class="detail-section">
+        <h3>Full Email Text</h3>
+        <div class="email-box" th:text="${scan.emailText}"></div>
+    </div>
+
+    <div class="detail-section" th:if="${scan.senderDisplayName != null and !scan.senderDisplayName.isEmpty()}">
+        <h3>Sender Info</h3>
+        <p>Display name: <strong th:text="${scan.senderDisplayName}"></strong></p>
+        <p>Email address: <strong th:text="${scan.senderEmail}"></strong></p>
+    </div>
+
+    <div class="result-grid">
+        <div class="result-section">
+            <h3>ML Classification</h3>
+            <p>Label: <strong th:text="${scan.mlLabel}"></strong></p>
+            <p>Confidence band: <strong th:text="${scan.confidenceBand}"></strong></p>
+            <p>Confidence: <span th:text="${#numbers.formatPercent(scan.mlConfidence, 1, 0)}"></span></p>
+            <p>Spam probability: <span th:text="${#numbers.formatPercent(scan.spamProbability, 1, 0)}"></span></p>
+            <p>Ham probability: <span th:text="${#numbers.formatPercent(scan.hamProbability, 1, 0)}"></span></p>
+        </div>
+        <div class="result-section">
+            <h3>Phishing Heuristics Summary</h3>
+            <p>Suspected: <strong th:text="${scan.phishingSuspected ? 'YES' : 'NO'}"></strong></p>
+            <p>Risk score: <strong th:text="${#numbers.formatPercent(scan.phishingRiskScore, 1, 0)}"></strong></p>
+            <p>Checks triggered: <span th:text="${scan.phishingTriggeredChecks} + ' / ' + ${scan.phishingTotalChecks}"></span></p>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>All 8 Phishing Checks</h3>
+        <div id="checks-container" class="checks-grid"></div>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const rawDetails = /*[[${scan.phishingDetailsJson}]]*/ '{}';
+            try {
+                const checks = JSON.parse(rawDetails);
+                const container = document.getElementById('checks-container');
+                const labels = {
+                    suspicious_urls: 'Suspicious URLs',
+                    urgency_language: 'Urgency Language',
+                    sensitive_info: 'Sensitive Info Request',
+                    generic_greeting: 'Generic Greeting',
+                    sender_mismatch: 'Sender Mismatch',
+                    excessive_punctuation: 'Excessive Punctuation',
+                    all_caps: 'Excessive ALL CAPS',
+                    attachment_mention: 'Attachment Mention'
+                };
+                Object.keys(labels).forEach(key => {
+                    const check = checks[key] || { triggered: false, details: [] };
+                    const div = document.createElement('div');
+                    div.className = 'check-item ' + (check.triggered ? 'check-triggered' : 'check-clear');
+                    const detailsText = (check.details && check.details.length > 0)
+                        ? check.details.join(', ') : 'No signals found';
+                    div.innerHTML = '<strong>' + (check.triggered ? '⚠ TRIGGERED' : '✓ clear') + '</strong> — ' +
+                        labels[key] + '<div class="check-details">' + detailsText + '</div>';
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                document.getElementById('checks-container').textContent = 'Check details unavailable.';
+            }
+            /*]]>*/
+        </script>
+    </div>
+
+    <a href="/history" class="btn-back">← Back to History</a>
+
+    <footer>
+        <p>B.Tech Final Year Project — Hybrid Spam &amp; Phishing Detector</p>
+    </footer>
+</div>
+</body>
+</html>

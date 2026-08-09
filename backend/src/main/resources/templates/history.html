@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TrueSender - Scan History</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>TrueSender</h1>
+        <p class="subtitle">Scan History</p>
+    </header>
+
+    <nav>
+        <a href="/">Scan Email</a>
+        <a href="/history">History</a>
+        <a href="/stats">Statistics</a>
+    </nav>
+
+    <table class="history-table">
+        <thead>
+        <tr>
+            <th>Scanned At</th>
+            <th>Email Preview</th>
+            <th>ML Label</th>
+            <th>Phishing?</th>
+            <th>Verdict</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="scan : ${scans}" class="clickable-row" th:onclick="'window.location=\'/scan/' + ${scan.id} + '\''">
+            <td th:text="${#temporals.format(scan.scannedAt, 'dd-MM-yyyy HH:mm')}"></td>
+            <td th:text="${#strings.abbreviate(scan.emailText, 60)}"></td>
+            <td>
+                <span th:text="${scan.mlLabel}"
+                      th:classappend="${scan.mlLabel == 'spam'} ? 'badge badge-spam' : 'badge badge-ham'"></span>
+            </td>
+            <td th:text="${scan.phishingSuspected ? 'Yes' : 'No'}"></td>
+            <td th:text="${scan.finalVerdict}"></td>
+        </tr>
+        <tr th:if="${scans.isEmpty()}">
+            <td colspan="5" class="empty-state">No scans yet. Go scan an email!</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <footer>
+        <p>B.Tech Final Year Project — Hybrid Spam &amp; Phishing Detector</p>
+    </footer>
+</div>
+</body>
+</html>

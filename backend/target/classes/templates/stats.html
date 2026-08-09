@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TrueSender - Statistics</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>TrueSender</h1>
+        <p class="subtitle">Statistics Dashboard</p>
+    </header>
+
+    <nav>
+        <a href="/">Scan Email</a>
+        <a href="/history">History</a>
+        <a href="/stats">Statistics</a>
+    </nav>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" th:text="${stats.total}"></div>
+            <div class="stat-label">Total Scans</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${stats.spamCount}"></div>
+            <div class="stat-label">Spam Detected (<span th:text="${#numbers.formatDecimal(stats.spamPercent, 1, 1)}"></span>%)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${stats.phishingCount}"></div>
+            <div class="stat-label">Phishing Suspected (<span th:text="${#numbers.formatDecimal(stats.phishingPercent, 1, 1)}"></span>%)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${stats.safeCount}"></div>
+            <div class="stat-label">Safe Emails (<span th:text="${#numbers.formatDecimal(stats.safePercent, 1, 1)}"></span>%)</div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>Spam vs Ham Ratio</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">Spam</span>
+                <div class="bar-track">
+                    <div class="bar-fill bar-spam" th:style="'width: ' + ${stats.total == 0 ? 0 : (stats.spamCount * 100.0 / stats.total)} + '%'"></div>
+                </div>
+                <span th:text="${stats.spamCount}"></span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">Ham</span>
+                <div class="bar-track">
+                    <div class="bar-fill bar-ham" th:style="'width: ' + ${stats.total == 0 ? 0 : (stats.hamCount * 100.0 / stats.total)} + '%'"></div>
+                </div>
+                <span th:text="${stats.hamCount}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-card">
+        <h3>Most Recent Scans</h3>
+        <table class="history-table">
+            <thead>
+            <tr>
+                <th>Scanned At</th>
+                <th>Email Preview</th>
+                <th>Verdict</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="scan : ${stats.recentScans}" class="clickable-row" th:onclick="'window.location=\'/scan/' + ${scan.id} + '\''">
+                <td th:text="${#temporals.format(scan.scannedAt, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${#strings.abbreviate(scan.emailText, 50)}"></td>
+                <td th:text="${scan.finalVerdict}"></td>
+            </tr>
+            <tr th:if="${stats.recentScans.isEmpty()}">
+                <td colspan="3" class="empty-state">No scans yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>B.Tech Final Year Project — Hybrid Spam &amp; Phishing Detector</p>
+    </footer>
+</div>
+</body>
+</html>
